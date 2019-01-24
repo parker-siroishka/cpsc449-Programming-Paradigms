@@ -57,7 +57,7 @@ public class BlockParser{
     
     /**
      * @param inputArr - String[] of input file. Each index is a line of the file
-     * @return errorVal - If Block headers are in correct format return true, else false.
+     * @return valid - If Block headers are in correct format return true, else false.
      */
     public boolean isValidFile(String[] inputArr) {
     	boolean valid = true;
