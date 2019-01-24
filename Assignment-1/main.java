@@ -1,84 +1,139 @@
-package MachineTaskCalc;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+
+
 public class main {
 
+
+
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		ArrayList<String> forced = new ArrayList(Arrays.asList("A", "B", "C", "D", "X", "X", "X", "X"));
-		ArrayList<String> forbidden = new ArrayList(Arrays.asList("3A", "3B", "4C", "5E"));
-		ArrayList<String> toonear = new ArrayList(Arrays.asList("HF","EA","HA"));
 		
+		ArrayList<String> forced = new ArrayList<String>(Arrays.asList("1A", "2B", "3C", "4D", "5E"));
+		ArrayList<String> forbidden = new ArrayList<String>(Arrays.asList("7F"));
+		ArrayList<String> toonear = new ArrayList<String>(Arrays.asList("EF","FE"));
 		int[][] penalties = {
 				{1, 1, 1, 1, 1, 1, 1, 1},
 				{1, 1, 1, 1, 1, 1, 1, 1},
 				{1, 1, 1, 1, 1, 1, 1, 1},
 				{1, 1, 1, 1, 1, 1, 1, 1},
 				{1, 1, 1, 1, 1, 1, 1, 1},
-				{1, 1, 1, 1, 1, 1, 1, 1},
-				{1, 1, 1, 1, 1, 1, 1, 1},
-				{1, 1, 1, 1, 1, 1, 1, 1}};
+				{1, 1, 1, 1, 1, 1, 10, 20},
+				{1, 1, 1, 1, 1, 1, 10, 30},
+				{1, 1, 1, 1, 1, 10, 1, 1}};
+		ArrayList<String> toonearPenal = new ArrayList<String>(Arrays.asList());
+
+		ArrayList<String> allCombinations = new ArrayList<String>();
+		ArrayList<String> possible = new ArrayList<String>();
+		ArrayList<String> tasks = new ArrayList<String>(Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H"));
+
 		
-		ArrayList<String> toonearPenal = new ArrayList(Arrays.asList("CD32","EF12","HF43"));
-		
-		ArrayList<String> allCombinations = new ArrayList();
-		ArrayList<String> possible = new ArrayList();
-		
-		ArrayList<String> tasks = new ArrayList(Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H"));
-		
+		// Calculates all the possible combinations and adds them to the ArrayList allCombinations
 		calcCombinations(allCombinations, tasks, "");
+
+		//Iterates through all the possible combinations
 		mainLoop:
 		for(int i = 0; i<allCombinations.size(); i++) {
+
 			String combo = allCombinations.get(i);
+
+			// Eliminates all non-possible combinations that violate forced tasks
 			for(int j = 0; j<forced.size(); j++) {
-				String forcedTask = forced.get(j); 
-				if(forcedTask!="X" && !forcedTask.equals(combo.substring(j,j+1))) {
+				
+				int forcedMachine = Integer.parseInt(forced.get(j).substring(0, 1));
+				String forcedTask = forced.get(j).substring(1,2); 
+
+				if(forcedTask!="X" && !forcedTask.equals(combo.substring(forcedMachine-1,forcedMachine))) {
+
 					//System.out.println(j+ " "  + forcedTask + " " + combo + " " + combo.substring(j,j+1));
 					continue mainLoop;
+
 				}
+
 			}
+			
+			// Eliminates all non-possible combinations that violate forbidden tasks
 			for(int j = 0; j<forbidden.size(); j++) {
+
 				int mach = Integer.parseInt(forbidden.get(j).substring(0,1));
 				String task = forbidden.get(j).substring(1); 
-				
+
 				if(combo.substring(mach-1, mach).equals(task)) {
+
 					//System.out.println(combo + " " + combo.substring(mach-1, mach) + " " + task);
 					continue mainLoop;
+
 				}
+
 			}
+			
+			// Eliminates all non-possible combinations that violate too-near tasks
 			for(int j = 0; j<toonear.size(); j++) {
+
 				String pair = toonear.get(j).substring(0,2);
-				
+
 				if(combo.contains(pair) || pair.equals(combo.substring(7,8) + combo.substring(0,1))) {
+
 					//System.out.println(combo + " " + pair + " " + combo.substring(6,7) + combo.substring(0,1));
 					continue mainLoop;
+
 				}
+
 			}
 			
+			// adds the possible task to the ArrayList
 			possible.add(combo);
-			
 		}
-		for(int x=0;x<possible.size(); x++) {
-			System.out.println(possible.get(x));
-		}
-	}
-	
-	static void calcCombinations(ArrayList<String> a, ArrayList<String> b, String str) {
+		ArrayList<Integer> possibleValues = new ArrayList<Integer>();
 		
+		// Prints out all possible combinations
+		for(int x=0;x<possible.size(); x++) {
+			String combo = possible.get(x);
+			System.out.println(combo);
+			int total = 0;
+			for(int y=0; y<combo.length(); y++) {
+				char c = combo.charAt(y);
+				int index = (int)c - 65;
+				int value = penalties[index][y];
+				total = value + total;
+			}
+			for(int j = 0; j<toonearPenal.size(); j++) {
+
+				String pair = toonearPenal.get(j).substring(0,2);
+
+				if(combo.contains(pair) || pair.equals(combo.substring(7,8) + combo.substring(0,1))) {
+					total+=Integer.parseInt(toonearPenal.get(j).substring(2));
+				}
+
+			}
+			possibleValues.add(total);
+		}
+		int lowest = possibleValues.get(0);
+		int lowestIndex = 0;
+		for(int z =0; z<possibleValues.size(); z++) {
+			if(possibleValues.get(z)>lowest) {
+				lowest = possibleValues.get(z);
+			}
+		}
+		System.out.println(possible.get(lowestIndex) + " " + lowest);
+	}
+
+	
+	// Calculates all possible combinations
+	static void calcCombinations(ArrayList<String> a, ArrayList<String> b, String str) {
+		// base case
 		if(b.size() == 0) a.add(str);
 		else {
 			
 			for(int i=0; i<b.size(); i++) {
+				
 				ArrayList<String> c = new ArrayList<>(b);
 				String temp = str + c.get(i);
 				c.remove(i);
 				calcCombinations(a, c, temp);
+
 			}
 		}
 	}
-	
-	
 }
