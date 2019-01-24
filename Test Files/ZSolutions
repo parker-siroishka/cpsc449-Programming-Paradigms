@@ -1,0 +1,22 @@
+2wrong.txt                   invalid penalty
+asymmetrical.txt             Solution A B C D E F H G; Quality: 8
+invalid2.txt                 No valid solution possible!
+invalidforbidden.txt         No valid solution possible!
+invalidtoonear.txt           No valid solution possible!
+machpen1.txt                 Solution A B C D E F H G; Quality: 36
+machpen2.txt                 Solution A B C D E H G F; Quality: 45
+nochoice2.txt                Solution A B C D E F G H; Quality: 8
+nochoice.txt                 Solution H G F E D C B A; Quality: 800
+optzero.txt                  Solution A B C D E F G H; Quality: 0
+toonearpen1.txt              Solution A B C D E H F G; Quality: 16
+toonearpen2.txt              Solution A B C D E G F H; Quality: 18
+toonearpen3.txt              Solution E F G H A D B C; Quality: 16
+wrongmachine.txt             invalid machine/task
+wrongmachpenalty1.txt        machine penalty error
+wrongmachpenalty2.txt        machine penalty error
+wrongnumbermachine.txt       invalid penalty
+wrongnumbertoonear.txt       invalid penalty
+wrongpartialassignment.txt   partial assignment error
+wrongtask.txt                invalid machine/task
+wrongtooneartask.txt         invalid task
+
