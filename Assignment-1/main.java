@@ -2,8 +2,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
-
 public class main {
 
 
@@ -26,6 +24,7 @@ public class main {
 
 		ArrayList<String> allCombinations = new ArrayList<String>();
 		ArrayList<String> possible = new ArrayList<String>();
+		
 		ArrayList<String> tasks = new ArrayList<String>(Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H"));
 
 		
@@ -90,14 +89,16 @@ public class main {
 		// Prints out all possible combinations
 		for(int x=0;x<possible.size(); x++) {
 			String combo = possible.get(x);
-			System.out.println(combo);
 			int total = 0;
+			//assign penalty scores
 			for(int y=0; y<combo.length(); y++) {
 				char c = combo.charAt(y);
 				int index = (int)c - 65;
 				int value = penalties[index][y];
 				total = value + total;
 			}
+			
+			//assign too near penalties
 			for(int j = 0; j<toonearPenal.size(); j++) {
 
 				String pair = toonearPenal.get(j).substring(0,2);
@@ -109,25 +110,34 @@ public class main {
 			}
 			possibleValues.add(total);
 		}
-		int lowest = possibleValues.get(0);
-		int lowestIndex = 0;
-		for(int z =0; z<possibleValues.size(); z++) {
-			if(possibleValues.get(z)>lowest) {
-				lowest = possibleValues.get(z);
+		if(possibleValues.size() > 0) {
+			int lowest = possibleValues.get(0);
+			int lowestIndex = 0;
+			for(int z =0; z<possibleValues.size(); z++) {
+				if(possibleValues.get(z)>lowest) {
+					lowest = possibleValues.get(z);
+				}
+				
 			}
+			
+			String best = possible.get(lowestIndex);
+			String output = "Solution " + best.substring(0, 1) + " " + best.substring(1, 2) + " " + best.substring(2, 3) + " " + best.substring(3, 4) + " " + best.substring(4, 5) + " " + best.substring(5, 6) + " " + best.substring(6, 7) + " " + best.substring(7, 8);
+			System.out.println(output + "; Quality: " + lowest);
+		}else {
+			System.out.println("No valid solution possible!");
 		}
-		System.out.println(possible.get(lowestIndex) + " " + lowest);
+		
 	}
 
 	
 	// Calculates all possible combinations
+	// a = return arrayList
+	// b = a
 	static void calcCombinations(ArrayList<String> a, ArrayList<String> b, String str) {
 		// base case
 		if(b.size() == 0) a.add(str);
 		else {
-			
 			for(int i=0; i<b.size(); i++) {
-				
 				ArrayList<String> c = new ArrayList<>(b);
 				String temp = str + c.get(i);
 				c.remove(i);
