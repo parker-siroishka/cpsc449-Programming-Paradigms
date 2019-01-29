@@ -2,8 +2,11 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class Parse {
+	
+	
 
 	public static void main(String[] args) throws IOException {
 		//Reads a text file line by line from the target file location.
@@ -21,6 +24,9 @@ public class Parse {
 		boolean mach_flag = false;
 		boolean toonear_flag = false;
 		
+		
+		int use_ind = 0;
+		int use_ind2 = 0;
 		int i = 0;
 		int j = 0;
 		int k = 0;
@@ -31,8 +37,11 @@ public class Parse {
 		String f_array[] = new String[8];
 		String forb_array[] = new String[8];
 		String near_array[] = new String[8];
-		String mach_array[][] = new String[8][8];
+		int mach_array[][] = new int[8][8];
 		String toonear_array[] = new String[8];
+		
+		String used[] = new String[16];
+		String used2[] = new String[16];
 
 
 		//Reads txt file line by line checking for flags. Once the flag is set for a hard or soft constraint the lines 
@@ -65,7 +74,26 @@ public class Parse {
 			if (forced_flag) {
 				if(i < 8 && "".equals(myLine.trim()) != true) {
 					String str_format = myLine.toString().replace(",","").replace("(","").replace(")","").trim(); //removes , ( )
-					if(true) { //validChar(str_format.substring(0,1))) { //Checks that it is a valid character A-H or 1-8. TODO fix error check. 
+					
+					
+					String first = str_format.substring(0,1);
+					String second = str_format.substring(1,2);
+					//PARTIALL ASSIGNMENT FLAG
+					boolean partial_assflag = Arrays.stream(used).anyMatch(first::equals);
+					
+					boolean partial_assflag2 = Arrays.stream(used).anyMatch(second::equals);//Checks array for any pairs that are the same. Breaks if so and outputs partial assignment error.
+					if (partial_assflag || partial_assflag2) {
+						System.out.println("partial assignment error");
+						break;
+					}
+					
+					used[use_ind] = first;
+					use_ind++;
+					used[use_ind] = second;
+					use_ind++;
+					//END PARTIAL ASSIGNMENT FLAG ERROR
+					
+					if(validChar(str_format)) { //Checks that it is a valid character A-H or 1-8. TODO fix error check. 
 						//!!!true temp holder
 						f_array[i] = str_format;
 						i++;
@@ -79,7 +107,7 @@ public class Parse {
 					//fills in the rest of the array with "null" without iterating through the file read loop.
 				}else if ( "".equals(myLine.trim())){
 					for (i = i; i < 8; i++){
-						f_array[i] = "null";
+						f_array[i] = null;
 					}
 					forced_flag = false;
 					continue;
@@ -94,7 +122,26 @@ public class Parse {
 			if (forb_flag) {
 				if(j < 8 && "".equals(myLine.trim()) != true) {
 					String str_format = myLine.toString().replace(",","").replace("(","").replace(")","").trim();
-					if(true) { //validChar(str_format.substring(0,1)) && validChar(str_format.substring(1))) attempted error check
+					
+					String first = str_format.substring(0,1);
+					String second = str_format.substring(1,2);
+
+					//PARTIALL ASSIGNMENT FLAG
+					boolean forb_assflag = Arrays.stream(used2).anyMatch(first::equals);
+					
+					boolean forb_assflag2 = Arrays.stream(used2).anyMatch(second::equals);//Checks array for any pairs that are the same. Breaks if so and outputs partial assignment error.
+					if (forb_assflag || forb_assflag2) {
+						System.out.println("partial assignment error");
+						break;
+					}
+					
+					used2[use_ind2] = first;
+					use_ind2++;
+					used2[use_ind2] = second;
+					use_ind2++;
+					//END PARTIAL ASSIGNMENT FLAG ERROR
+					
+					if(validChar(str_format)) { //validChar(str_format.substring(0,1)) && validChar(str_format.substring(1))) attempted error check
 						forb_array[j] = str_format;
 						j++;
 						continue;
@@ -105,7 +152,7 @@ public class Parse {
 					
 				}else if ( "".equals(myLine.trim())){
 					for (j = j; j < 8; j++){
-						forb_array[j] = "null";
+						forb_array[j] = null;
 					}
 					forb_flag = false;
 					continue;
@@ -121,7 +168,7 @@ public class Parse {
 			if (near_flag) {
 				if(k < 8 && "".equals(myLine.trim()) != true) {
 					String str_format = myLine.toString().replace(",","").replace("(","").replace(")","").trim();
-					if(true) { //validChar(str_format.substring(0,1)) && validChar(str_format.substring(1))) attempted error check
+					if(validChar2(str_format)) {
 						near_array[k] = str_format;
 						k++;
 						continue;
@@ -132,7 +179,7 @@ public class Parse {
 				//k is the number of items in an array too near task array	
 				}else if ( "".equals(myLine.trim())){
 					for (k = k; k < 8; k++){
-						near_array[k] = "null";
+						near_array[k] = null;
 					}
 					near_flag = false;
 					continue;
@@ -151,9 +198,19 @@ public class Parse {
 			//Assignes machine penalties, breaking if finding more than 8 lines of machine penalties.
 			if (mach_flag && m_row <8) {
 			    String hold = new String();
+			    if (array1.length != 8) { 							//Checks if the array length is less than 8. Breaks if so.
+			    	System.out.println("machine penalty error");
+			    	break;
+			    }
 			    for (int m_col = 0; m_col < array1.length; m_col++) {
 			    	hold = array1[m_col];
-			    	mach_array[m_row][m_col] = hold;		    	
+			    	
+			    	//Checks if the integer is less than 0.
+			    	if(isInteger(hold) != true) {
+				    	System.out.println("machine penalty error");
+				    	break;
+			    	}
+			    	mach_array[m_row][m_col] = Integer.parseInt(hold);		    	
 			    }
 			    m_row++;
 			//checks if there is more than 8 lines for machine penaltys
@@ -161,10 +218,12 @@ public class Parse {
 				mach_flag = false;
 				continue;
 			}else if (mach_flag && m_row == 8 && "".equals(myLine.trim())!= true) {
-				System.out.println("maching penalty errror");
+				System.out.println("machine penalty error");
 				break;
 			}
 			
+			
+			//Too near penalties
 			if (myLine.contains("too-near penalities")) {
 				toonear_flag = true;
 				continue;
@@ -172,7 +231,7 @@ public class Parse {
 			if (toonear_flag) {
 				if(p < 8 && "".equals(myLine.trim()) != true) {
 					String str_format = myLine.toString().replace(",","").replace("(","").replace(")","").trim();
-					if(true) { //validChar(str_format.substring(0,1)) && validChar(str_format.substring(1))) attempted error check
+					if(validChar(str_format)) {
 						toonear_array[p] = str_format;
 						p++;
 						continue;
@@ -183,7 +242,7 @@ public class Parse {
 				//k is the number of items in an array too near task array	
 				}else if ( "".equals(myLine.trim())){
 					for (p = p; p < 8; p++){
-						near_array[p] = "null";
+						near_array[p] = null;
 					}
 					toonear_flag = false;
 					continue;
@@ -209,14 +268,75 @@ public class Parse {
 			
 	}
 	public static boolean validChar(String ch) {
+		
+		String first = ch.substring(0,1);
+		String second = ch.substring(1,2);
+		String valid_num[] = {"1","2","3","4","5","6","7","8"};
+		String valid_char[] = {"A","B","C","D","E","F","G","H"};
 
-		String valid[] = {"A","B","C","D","E","F","G","H","1","2","3","4","5","6","7","8"};
-		boolean contains = Arrays.stream(valid).anyMatch("ch"::equals);
-		if (contains) {
+
+		if (ch.length()> 2 ) {
+			boolean contains0 = Arrays.stream(valid_char).anyMatch(first::equals);
+			boolean contains1 = Arrays.stream(valid_char).anyMatch(second::equals);
+			
+			String third = ch.substring(2);
+			
+			if (contains0 && contains1 && isInteger(third)) {
+				return true;
+			}else {
+				return false;
+			}
+			
+		}
+		
+		boolean contains0 = Arrays.stream(valid_num).anyMatch(first::equals);
+		boolean contains1 = Arrays.stream(valid_char).anyMatch(second::equals);
+		
+		if (contains0 && contains1) {
 			return true;
 		}else {
 		return false;
 		}		
+	}
+	
+	public static boolean validChar2(String ch) {
+		
+		String first = ch.substring(0,1);
+		String second = ch.substring(1,2);
+		String valid_char[] = {"A","B","C","D","E","F","G","H"};
+		
+		boolean contains0 = Arrays.stream(valid_char).anyMatch(first::equals);
+		boolean contains1 = Arrays.stream(valid_char).anyMatch(second::equals);
+		
+
+		if (ch.length()> 2 ) {
+				return false;
+			}
+
+		if (contains0 && contains1) {
+				return true;
+			}else {
+				return false;
+		}		
+	}
+	
+	
+	
+	
+	public static boolean isInteger(String s) {
+	    return isInteger(s,10);
+	}
+
+	public static boolean isInteger(String s, int radix) {
+	    if(s.isEmpty()) return false;
+	    for(int i = 0; i < s.length(); i++) {
+	        if(i == 0 && s.charAt(i) == '-') {
+	            if(s.length() == 1) return false;
+	            else continue;
+	        }
+	        if(Character.digit(s.charAt(i),radix) < 0) return false;
+	    }
+	    return true;
 	}
 
 }
