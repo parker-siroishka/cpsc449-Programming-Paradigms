@@ -2,7 +2,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Scanner;
 
 public class Parse {
 	
@@ -248,13 +247,7 @@ public class Parse {
 					continue;
 				}
 			}
-			
-			
-		
-	    
-		    
-		    //TEST CASES
-		    //System.out.println(Arrays.deepToString(array1));
+
 
 		}
 		    System.out.println(Arrays.deepToString(mach_array));
@@ -327,14 +320,21 @@ public class Parse {
 	    return isInteger(s,10);
 	}
 
+	//The sub function that takes a string enumerates through and and checks if the value is a int in base 10.
 	public static boolean isInteger(String s, int radix) {
 	    if(s.isEmpty()) return false;
 	    for(int i = 0; i < s.length(); i++) {
 	        if(i == 0 && s.charAt(i) == '-') {
-	            if(s.length() == 1) return false;
-	            else continue;
+	            if(s.length() == 1) {
+	            	System.out.println("Invalid penalty");
+	            	return false;
+	            }else 
+	            	continue;
 	        }
-	        if(Character.digit(s.charAt(i),radix) < 0) return false;
+	        if(Character.digit(s.charAt(i),radix) < 0) {
+            	System.out.println("Invalid penalty");
+	        	return false;
+	        }
 	    }
 	    return true;
 	}
