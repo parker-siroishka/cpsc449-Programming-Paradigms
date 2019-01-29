@@ -1,13 +1,12 @@
+package TaskMachineCalc;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class main {
 
-
-
-	public static void main(String[] args) {
-		
+	public static void  main(String[] args){
 		ArrayList<String> forced = new ArrayList<String>(Arrays.asList("1A", "2B", "3C", "4D", "5E"));
 		ArrayList<String> forbidden = new ArrayList<String>(Arrays.asList("7F"));
 		ArrayList<String> toonear = new ArrayList<String>(Arrays.asList("EF","FE"));
@@ -21,6 +20,10 @@ public class main {
 				{1, 1, 1, 1, 1, 1, 10, 30},
 				{1, 1, 1, 1, 1, 10, 1, 1}};
 		ArrayList<String> toonearPenal = new ArrayList<String>(Arrays.asList());
+		
+		printBest(forced, forbidden, toonear, penalties, toonearPenal);
+	}
+	static void printBest(ArrayList<String> forced, ArrayList<String> forbidden, ArrayList<String> toonear, int[][] penalties, ArrayList<String> toonearPenal) {
 
 		ArrayList<String> allCombinations = new ArrayList<String>();
 		ArrayList<String> possible = new ArrayList<String>();
