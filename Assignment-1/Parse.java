@@ -293,7 +293,7 @@ public class Parse {
 			writer.close();
 	}
 
-	public static boolean validChar(String ch) { // used for forced partial assignment, forbidden machine		
+	public boolean validChar(String ch) { // used for forced partial assignment, forbidden machine		
 
 		String first = ch.substring(0,1);
 		String second = ch.substring(1,2);
@@ -323,7 +323,7 @@ public class Parse {
 		}		
 	}	
 
-	public static boolean validChar2(String ch) { // for too-near tasks: block only		
+	public boolean validChar2(String ch) { // for too-near tasks: block only		
 
 		String first = ch.substring(0,1);
 		String second = ch.substring(1,2);
@@ -344,31 +344,37 @@ public class Parse {
 	}
 
 
-	public static boolean isInteger(String s) {return isInteger(s,10);}
+	public boolean isInteger(String s) {return isInteger(s,10);}
 
 
 
 	//The sub function that takes a string enumerates through and and checks if the value is a int in base 10.
-	public static boolean isInteger(String s, int radix) {  // for machine penalties, too-near penalities 
+	public boolean isInteger(String s, int radix) {  // for machine penalties, too-near penalities 
 
-	    if(s.isEmpty()) return false;
+		try {
+			PrintWriter writer2 = new PrintWriter(this.outputParam);
 
-	    for(int i = 0; i < s.length(); i++) {
-	        if(i == 0 && s.charAt(i) == '-') {
-	            if(s.length() == 1) {
-	            	System.out.println("Invalid penalty");
-	            	//writer.write("Invalid penalty");
+	    	if(s.isEmpty()) return false;
+
+	    	for(int i = 0; i < s.length(); i++) {
+	        	if(i == 0 && s.charAt(i) == '-') {
+	            	if(s.length() == 1) {
+	            		System.out.println("Invalid penalty");
+	            		writer2.write("Invalid penalty");
+	            		writer2.close();
+						System.exit(1);
+	            	}else 
+	            		continue;
+	        	}
+
+	        	if(Character.digit(s.charAt(i),radix) < 0) {
+            		System.out.println("Invalid penalty");
+	        		writer2.write("Invalid penalty");
+	        		writer2.close();
 					System.exit(1);
-	            }else 
-	            	continue;
-	        }
-
-	        if(Character.digit(s.charAt(i),radix) < 0) {
-            	System.out.println("Invalid penalty");
-	        	//writer.write("Invalid penalty");
-				System.exit(1);
-	        }
-	    }
+	        	}
+	    	}
+	    }catch (Exception e){System.exit(1);}
 	    return true;
 	}
 
@@ -377,16 +383,17 @@ public class Parse {
 	public static void main(String[] args) {
 	
 		// Create Parse object with desired input file & output file locations
-		Parse parser = new Parse("C:\\Users\\parke\\Desktop\\Projects\\Repos\\cpsc449-Programming-Paradigms\\Test Files\\machpen1.txt", 
+		Parse parser = new Parse("C:\\Users\\parke\\Desktop\\Projects\\Repos\\cpsc449-Programming-Paradigms\\Test Files\\wrongnumbermachine.txt", 
 										"C:\\Users\\parke\\Desktop\\CPSC 449\\myoutput.txt");
 
 		// Parse through each line of the input file and quit upon proccessing errors. Must put Parse opbject in try catch block as
 		// methodn throws IOException.
 		try {
 			parser.parse();
-		} catch (IOException ioe) {System.out.println("IOException Thrown");}
+		} catch (Exception e) {System.out.println("Error");}
 
-		System.out.println(Arrays.deepToString(parser.forcedpartial_array));
+		// To access arrays, use parser.forcedpartial_array, parser.forbiddenmachine_array, etc..
+		// All these instance variables are listed at the top of the file.
 
 	}
 
