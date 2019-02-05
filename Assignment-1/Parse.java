@@ -383,7 +383,7 @@ public class Parse {
 	public static void main(String[] args) {
 	
 		// Create Parse object with desired input file & output file locations
-		Parse parser = new Parse("C:\\Users\\parke\\Desktop\\Projects\\Repos\\cpsc449-Programming-Paradigms\\Test Files\\wrongnumbermachine.txt", 
+		Parse parser = new Parse("C:\\Users\\parke\\Desktop\\Projects\\Repos\\cpsc449-Programming-Paradigms\\Test Files\\wrongtask.txt", 
 										"C:\\Users\\parke\\Desktop\\CPSC 449\\myoutput.txt");
 
 		// Parse through each line of the input file and quit upon proccessing errors. Must put Parse opbject in try catch block as
