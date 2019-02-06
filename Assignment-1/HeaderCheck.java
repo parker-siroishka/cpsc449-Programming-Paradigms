@@ -80,12 +80,12 @@ public class HeaderCheck{
     
     public static void main(String[] args) {
     	
-    	HeaderCheck parser = new HeaderCheck("C:\\Users\\parke\\eclipse-workspace\\Assignment-1\\src\\A_example_test_file.txt");
+    	HeaderCheck parser = new HeaderCheck("C:\\Users\\parke\\Desktop\\Projects\\Repos\\cpsc449-Programming-Paradigms\\Test Files\\wrongtask.txt");
     	String[] inputArr = parser.inputFileToList(parser.inputFile);
     	if(parser.isValidFile(inputArr)) {
     		System.out.println("GOOD FILE!");
     	} else if(!parser.isValidFile(inputArr)){
-            System.out.println("Error while parsing input file.")
+            System.out.println("Error while parsing input file.");
         }
     	
     }

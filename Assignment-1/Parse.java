@@ -10,6 +10,8 @@ import java.io.BufferedWriter;
 
 public class Parse {
 
+		HeaderCheck headerCheck;
+
 		// Filepath for FileReader object created in Parse() method.
 		String inputParam;
 		String outputParam;
@@ -28,6 +30,7 @@ public class Parse {
 		public Parse(String inputPath, String outputPath){
 			inputParam = inputPath;
 			outputParam = outputPath;
+			headerCheck = new HeaderCheck(inputParam);
 		}
 
 
@@ -59,6 +62,15 @@ public class Parse {
 		int k = 0;
 		int m_row = 0;
 		int p = 0;
+
+		String[] inputArr = headerCheck.inputFileToList(headerCheck.inputFile);
+		if(!headerCheck.isValidFile(inputArr)){
+			System.out.println("Error while parsing input file");
+			writer.write("Error while parsing input file");
+			writer.close();
+			System.exit(1);
+		}
+
 		
 		//TODO check machine and task bounds before being apended into an array.
 		while ((myLine = bufRead.readLine()) != null){    
