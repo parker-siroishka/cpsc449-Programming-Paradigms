@@ -52,7 +52,11 @@ public class HeaderCheck{
      * @return String[] - String[] of all text in input file. Each index is a line of the .txt
      */
     public String[] inputFileToList(List<String> inputFile){
-    	return this.inputFile.toArray(new String[this.inputFile.size()]);
+        String[] temp = new String[this.inputFile.size()];
+        for (int i = 0; i < this.inputFile.size(); i++)
+            temp[i] = inputFile.get(i).trim();
+    	
+        return temp;
     }
     
     /**
@@ -68,8 +72,8 @@ public class HeaderCheck{
     			if(this.blockHeaders[i].equals(inputArr[j])) {
     				
     				numOfHeaders++;
-    				i++;
-    				j++;
+    				// i++;
+    				// j++;
     			}
     		}
     	}
@@ -78,17 +82,6 @@ public class HeaderCheck{
     	return valid;
     }
     
-    public static void main(String[] args) {
-    	
-    	HeaderCheck parser = new HeaderCheck("C:\\Users\\parke\\Desktop\\Projects\\Repos\\cpsc449-Programming-Paradigms\\Test Files\\wrongtask.txt");
-    	String[] inputArr = parser.inputFileToList(parser.inputFile);
-    	if(parser.isValidFile(inputArr)) {
-    		System.out.println("GOOD FILE!");
-    	} else if(!parser.isValidFile(inputArr)){
-            System.out.println("Error while parsing input file.");
-        }
-    	
-    }
     
 }
 
