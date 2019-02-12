@@ -27,20 +27,32 @@ public class HardAndSoft {
 
 
         HashSet<String> forbidden = new HashSet<String>();
-        HashSet<String> forced_partial_assignments = new HashSet<String>();
-        forbidden.add("6,6");
-        forced_partial_assignments.add("1,1");
-        forced_partial_assignments.add("2,2");
-        forced_partial_assignments.add("3,3");
-        forced_partial_assignments.add("4,4");
-        forced_partial_assignments.add("5,5");
+        HashMap<String,String> forced_partial_assignments = new HashMap();
+        forbidden.add("7,6");
+        System.out.println("forbidden:" + forbidden);
+        HashSet<String> tooNearHardSet = new HashSet<>();
+        tooNearHardSet.add("78");
+        tooNearHardSet.add("87");
+        tooNearHardSet.add("18");
+        tooNearHardSet.add("81");
+
+        forced_partial_assignments.put("1","1");
+        forced_partial_assignments.put("2","2");
+        forced_partial_assignments.put("3","3");
+        forced_partial_assignments.put("4","4");
+        forced_partial_assignments.put("5","5");
+        //forced_partial_assignments.put("6", "6");
+
         
         List<Integer> machinesLeft = new ArrayList<Integer>();
+        List<Integer> curr_order = new ArrayList<Integer>();
         for(int i = 1; i < 9; i ++){
             machinesLeft.add(i);
+            curr_order.add(-1);
         }
         
-        String[] tooNear = {"EG3", "GH7", "FH7", "HG9", "FG8", "FA7", "GA8"};
+        //String[] tooNear = {"EG3", "GH7", "FH7", "HG9", "FG8"};
+        String[] tooNear = {};
         HashMap<String, Integer> tooNearMap = new HashMap<>();
         for(int i =0; i < tooNear.length; i++){
             String constraint = tooNear[i];
@@ -49,10 +61,11 @@ public class HardAndSoft {
             System.out.println(tooNearMap);
         }
 
-       
-        //softConstraints(weights, tooNearPenalties, currentOrder);
 
-        findBestCombo(weights, machinesLeft, new ArrayList(machinesLeft), 0, new ArrayList<Integer>(), forbidden, new HashSet(forced_partial_assignments), tooNearMap);
+        //softConstraints(weights, tooNearPenalties, currentOrder);
+        applyForced(weights, new ArrayList(machinesLeft), new ArrayList(machinesLeft), 0, curr_order, forbidden, forced_partial_assignments, tooNearMap, tooNearHardSet);
+
+        //findBestCombo(weights, new ArrayList(machinesLeft), new ArrayList(machinesLeft), 0, new ArrayList<Integer>(8), forbidden, new HashSet(forced_partial_assignments), tooNearMap);
         System.out.println("******************************************************\nBest solution found at end of function call"); 
         System.out.println(best_order);                    
 
@@ -67,7 +80,8 @@ public class HardAndSoft {
         task_num.put(8,"H");
 
 
-        for(int i = 0; i < best_order.size(); i++){
+
+        for(int i = 0; i < machinesLeft.size(); i++){
             System.out.println(task_num.get(best_order.get(i)));
         }
         System.out.println(min_weights);
@@ -75,12 +89,55 @@ public class HardAndSoft {
 
 
     // once the partial assignments are complete, find best weight with remaining machines and tasks 
-    static void findBestCombo(int[][] weights, List<Integer> machinesLeft, List<Integer> tasksLeft,int weight_so_far, List<Integer> curr_order, HashSet<String> forbidden, HashSet<String> forced_partial_assignments, HashMap<String,Integer> tooNearMap){
+
+
+   
+    static void applyForced(int[][] weights, List<Integer> machinesLeft, List<Integer> tasksLeft,int weight_so_far, List<Integer> curr_order, HashSet<String> forbidden, HashMap<String,String> forced_partial_assignments, HashMap<String,Integer> tooNearMap, HashSet<String> tooNearHardSet){
+        int size = machinesLeft.size();
+        int i = 0;
+        System.out.println("entered");
+        System.out.println(machinesLeft);
+        System.out.println(tasksLeft);
+        System.out.println(curr_order);
+        i = 0;
+        while(i < size){
+            if(forced_partial_assignments.containsKey( Integer.toString(machinesLeft.get(i)) )){
+                int j = 0;
+                while(tasksLeft.get(j) != tasksLeft.get(j)){
+                    j++;
+                }
+                System.out.println("I:" + i + "j" + j);
+                curr_order.set(machinesLeft.get(i)-1, tasksLeft.get(j));
+                if(is_too_near_hard(tooNearHardSet, curr_order, machinesLeft.get(i))){
+                    System.out.println("in applyForced we exited because too near hard constraint failed");
+                    return;
+
+                }
+                weight_so_far += weights[machinesLeft.get(i)][tasksLeft.get(j)] + softConstraint2(tooNearMap, curr_order, machinesLeft.get(i));
+                machinesLeft.remove(i);
+                i--;
+                size--;
+                tasksLeft.remove(j);
+
+            }
+            i++;
+        }
+
+        System.out.println("after applying forced");
+        System.out.println(curr_order);
+        System.out.println(machinesLeft);
+        System.out.println(tasksLeft);
+        System.out.println(weight_so_far);
+
+        System.out.println("calling findbestCombo");
+        findBestCombo(weights, new ArrayList(machinesLeft), new ArrayList(machinesLeft), weight_so_far, new ArrayList<Integer>(curr_order), forbidden, tooNearMap, tooNearHardSet);
+
+    }
+
+
+
+    static void findBestCombo(int[][] weights, List<Integer> machinesLeft, List<Integer> tasksLeft,int weight_so_far, List<Integer> curr_order, HashSet<String> forbidden,  HashMap<String,Integer> tooNearMap, HashSet<String> tooNearHardSet){
         
-
-        
-
-
         //System.out.println("function called: \t" + curr_order);
         if(weight_so_far >= min_weights){
             //System.out.println("Found less optimal solution");
@@ -89,18 +146,16 @@ public class HardAndSoft {
         }
         if(machinesLeft.size() == 0 && tasksLeft.size() == 0){
             //System.out.println("found solution");
-            if(weight_so_far < min_weights && forced_partial_assignments.size() == 0){
-                System.out.println("found solution to solve hard constraints");
-                System.out.println(curr_order);
-                best_order = new ArrayList(curr_order);
-                min_weights = weight_so_far;
-                            
-            }
+
+            System.out.println("found new optimal solution" + weight_so_far);
+            System.out.println(curr_order );
+            best_order = new ArrayList(curr_order);
+            min_weights = weight_so_far;
             return ;
         }
 
         if(machinesLeft.size() == 0 && tasksLeft.size() != 0){
-            //System.out.println("0 machines left, but tasks left ");
+            System.out.println("0 machines left, but tasks left ");
             return;
         }
             
@@ -121,26 +176,27 @@ public class HardAndSoft {
      
             //System.out.println("current task" + task);
             String current_assignment = "" + machine + "," + task;
-
+            System.out.println("current assignment: "  + current_assignment);
+            if(forbidden.contains(current_assignment)){
+                System.out.println("\n\n\nforbidden" + current_assignment);
+            }
             // if the current assignment is forbidden, do not perform this assignment 
-            if( !forbidden.contains(current_assignment)){
-                curr_order.add(task);  // add a new task
-                int penaltyValue = softConstraint2(tooNearMap, curr_order);
-                
-                 
-                boolean forced_partial_seen = false; 
-                if(forced_partial_assignments.contains(current_assignment)){
-                    forced_partial_seen = true; 
-                    forced_partial_assignments.remove(current_assignment);
-                }
-                findBestCombo(weights, machinesLeft, tasksLeft, penaltyValue + weight_so_far + weights[machine-1][task-1],curr_order, forbidden, forced_partial_assignments , tooNearMap);
+            if( !forbidden.contains(current_assignment) ){
+                curr_order.set(machine -1, task);  // add a new task
+                boolean isTooNear  = is_too_near_hard(tooNearHardSet, curr_order, machine);
+                if(!isTooNear){
+                    System.out.println("not forbidden and not too near");
+                    int penaltyValue = softConstraint2(tooNearMap, curr_order, machine);
+                    if(penaltyValue != 0){
+                        System.out.println("machine:\t" + machine + "task:\t" + task + "penaltyValue:\t" + penaltyValue);
+                        System.out.println(curr_order);
 
-                if(forced_partial_seen == true){
-                    forced_partial_assignments.add(current_assignment);
-                }
-                
-                curr_order.remove(curr_order.size()-1);         // remove the item just added to current order 
+                    }
 
+                    findBestCombo(weights, machinesLeft, tasksLeft, penaltyValue + weight_so_far + weights[machine-1][task-1],curr_order, forbidden, tooNearMap, tooNearHardSet);
+                    
+                }
+             
             }
             tasksLeft.add(task);
 
@@ -148,7 +204,7 @@ public class HardAndSoft {
         }
     }
 
-    static int softConstraint2(HashMap<String, Integer> tooNearMap, List<Integer> curr_order){
+    static int softConstraint2(HashMap<String, Integer> tooNearMap, List<Integer> curr_order, int machine){
         HashMap<Integer, String> task_num = new HashMap<>();
         task_num.put(1,"A");
         task_num.put(2,"B");
@@ -158,55 +214,65 @@ public class HardAndSoft {
         task_num.put(6,"F");
         task_num.put(7,"G");
         task_num.put(8,"H");
-        if(curr_order.size() > 1 && curr_order.size() < 8){
-            String curr_pair = task_num.get(curr_order.get(curr_order.size()-2)) + task_num.get(curr_order.get(curr_order.size()-1));
-            //System.out.println("current_pairing " + curr_pair);
-            if(tooNearMap.containsKey(curr_pair)){
-                //System.out.println("found too near");
-                return tooNearMap.get(curr_pair);
-            }
+        task_num.put(-1,"Z");
+        String curr_pair1;
+        String curr_pair2;
+        if(machine == 1){
+            curr_pair1 = task_num.get(curr_order.get(0)) + task_num.get(curr_order.get(1));
+            curr_pair2 = task_num.get(curr_order.get(7)) + task_num.get(curr_order.get(0));
 
         }
-        if(curr_order.size() == 8){
-            String curr_pair = task_num.get(curr_order.get(7)) + task_num.get(curr_order.get(0));
-            //System.out.println("8 pairing:" + curr_pair);
-            if(tooNearMap.containsKey(curr_pair)){
-                //System.out.println("found too near");
-                return tooNearMap.get(curr_pair);
-            }
+        else{
+            curr_pair1 = task_num.get(curr_order.get(machine -2)) + task_num.get(curr_order.get(machine -1)); // 7, 8
+            curr_pair2 = task_num.get(curr_order.get(machine -1)) + task_num.get(curr_order.get(machine % 8));
+        }
 
+        if(tooNearMap.containsKey(curr_pair1)){
+            //System.out.println("found too near");
+            return tooNearMap.get(curr_pair1);
+        }
+        if(tooNearMap.containsKey(curr_pair2)){
+            return tooNearMap.get(curr_pair2);
         }
         
         return 0;
 
     }
 
-    static int softConstraints(int[][] machinePenalties, String[] tooNear, List<Integer> curr_order){
-        int totalWeight = 0;
-        String charNum = "ABCDEFGH";
-        for(int i = 0; i < curr_order.size(); i++){
-            int machineWeight = machinePenalties[i][(curr_order.get(i)-1)];
-            totalWeight += machineWeight;
-            
+
+      static boolean is_too_near_hard(HashSet<String> tooNearHardSet, List<Integer> curr_order, int machine){
+        HashMap<Integer, String> task_num = new HashMap<>();
+        task_num.put(1,"A");
+        task_num.put(2,"B");
+        task_num.put(3,"C");
+        task_num.put(4,"D");
+        task_num.put(5,"E");
+        task_num.put(6,"F");
+        task_num.put(7,"G");
+        task_num.put(8,"H");
+        task_num.put(-1,"Z");
+        String curr_pair1;
+        String curr_pair2;
+        if(machine == 1){
+            curr_pair1 = task_num.get(curr_order.get(0)) + task_num.get(curr_order.get(1));
+            curr_pair2 = task_num.get(curr_order.get(7)) + task_num.get(curr_order.get(0));
+
+        }
+        else{
+            curr_pair1 = task_num.get(curr_order.get(machine -2)) + task_num.get(curr_order.get(machine -1)); // 7, 8
+            curr_pair2 = task_num.get(curr_order.get(machine -1)) + task_num.get(curr_order.get(machine % 8));
         }
 
-        for(int j = 0; j < tooNear.length; j++){
-            int first = charNum.indexOf((char)tooNear[j].charAt(0));
-            int second = charNum.indexOf((char)tooNear[j].charAt(1));
-            int tooNearPen = Integer.parseInt(tooNear[j].substring(2));
-            System.out.println("tooNearPen: "+tooNearPen);
-            System.out.println("Curr_order"+curr_order);
-            System.out.println("first: "+first);
-            System.out.println("second: "+curr_order.indexOf(second));
-            if(curr_order.indexOf(first) == curr_order.indexOf(second) - 1){
-                totalWeight += tooNearPen;
-            }
-            if(curr_order.indexOf(first) == 7 && curr_order.indexOf(second) == 0){
-                totalWeight += tooNearPen;
-            }
+        if(tooNearHardSet.contains(curr_pair1)){
+            //System.out.println("found too near");
+            return true;
         }
-        System.out.println("Soft constraint penalties: \t"+totalWeight);
-        return totalWeight;
+        if(tooNearHardSet.contains(curr_pair2)){
+            return true;
+        }
+        
+        return false;
 
     }
+
 }
