@@ -2,9 +2,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
-import java.io.FileWriter;
 import java.io.PrintWriter;
-import java.io.BufferedWriter;
 
 
 
@@ -17,6 +15,10 @@ public class Parse {
 		String outputParam;
 
 		//Init String/Int arrays.
+		
+		String[] blockHeaders = new String[] {"Name:", "forced partial assignment:", "forbidden machine:",
+				"too-near tasks:", "machine penalties:", "too-near penalities"};
+		
 		String forcedpartial_array[] = new String[8];
 		String forbiddenmachine_array[] = new String[56];
 		String neartask_array[] = new String[8];
@@ -39,8 +41,6 @@ public class Parse {
 
 			//Reads a text file line by line from the target file location.
 			FileReader input = new FileReader(this.inputParam);
-			//FileWriter fw = new FileWriter(this.outputParam);
-			//BufferedWriter writer = new BufferedWriter(fw);
 			BufferedReader bufRead = new BufferedReader(input);
 			PrintWriter writer = new PrintWriter(this.outputParam);
 
@@ -54,9 +54,11 @@ public class Parse {
 		boolean near_flag = false;
 		boolean mach_flag = false;
 		boolean toonear_flag = false;
+		
+		boolean docustart = false;
+		boolean docuend = false;
 				
 		int use_ind = 0;
-		int use_ind2 = 0;
 		int i = 0;
 		int j = 0;
 		int k = 0;
@@ -71,29 +73,47 @@ public class Parse {
 			System.exit(1);
 		}
 
-		
-		//TODO check machine and task bounds before being apended into an array.
+
+//Line by line reads a .txt file.
 		while ((myLine = bufRead.readLine()) != null){    
 
 			//Sets name flag to check if there is a name in the following .txt line.
 			if (myLine.contains("Name:")) {
 				name_flag = true;
+				docustart = true;
 				continue;
 			}
-
-			//Outputs a parse error if no name is given in the .txt file.
-			if (name_flag) {
-				if("".equals(myLine.trim())) {
+			
+			if (docustart == false) {
+				if ("".equals(myLine.trim())) {
+					continue;
+				}else {
 					System.out.println("Error while parsing input file");
 					writer.write("Error while parsing input file");
 					writer.close();
 					System.exit(1);
 				}
-				name_flag = false;
 			}
 
-			
-			//FORCED PARTIAL ASSIGNMENT
+			//Outputs a parse error if no name is given in the .txt file.
+			if (name_flag) {
+				if ("".equals(myLine.trim())){
+					continue;
+				}
+				if("".equals(myLine.trim()) != true) {
+					if(myLine.contains("forced partial assignment:") || containsWhiteSpace(myLine)) {
+						System.out.println("Error while parsing input file");
+						writer.write("Error while parsing input file");
+						writer.close();
+						System.exit(1);
+					}
+				name_flag = false;
+				continue;
+				}
+			}
+
+
+//FORCED PARTIAL ASSIGNMENT
 			//Sets flag to append forced partial assignment lines into array on next loop iteration.
 			if (myLine.contains("forced partial assignment:")) {
 				forced_flag = true;
@@ -103,12 +123,27 @@ public class Parse {
 			//Appends forced partial assignments into a String array of 8
 			//Outputs a parse error if no name is given in text file.
 			if (forced_flag) {
-				if(i < 8 && "".equals(myLine.trim()) != true) {
+				
+				if (myLine.contains("forbidden machine:")) {
+					forced_flag = false;
+					forb_flag = true;
+					continue;
+				}
+			
+				if("".equals(myLine.trim()) != true) {
+					
+					if(myLine.trim().length() != 5 || validLineFPA_FM(myLine.trim()) != true ) {
+						System.out.println("invalid machine/task");
+						writer.write("invalid machine/task");
+						writer.close();
+						System.exit(1);
+					}
+					if(i<=7) {		
 					String str_format = myLine.toString().replace(",","").replace("(","").replace(")","").trim(); //removes , ( )
 					String first = str_format.substring(0,1);
 					String second = str_format.substring(1,2);
 
-					//PARTIALL ASSIGNMENT FLAG
+					//PARTIALL ASSIGNMENT ERROR FLAG
 					boolean partial_assflag = Arrays.stream(used).anyMatch(first::equals);
 					boolean partial_assflag2 = Arrays.stream(used).anyMatch(second::equals);//Checks array for any pairs that are the same. Breaks if so and outputs partial assignment error.
 
@@ -118,109 +153,84 @@ public class Parse {
 						writer.close();
 						System.exit(1);
 					}
-
 					used[use_ind] = first;
 					use_ind++;
 					used[use_ind] = second;
 					use_ind++;
+					//END PARTIAL ASSIGNMENT ERROR FLAG
 
-					//END PARTIAL ASSIGNMENT FLAG ERROR
-
-					if(validChar(str_format)) { //Checks that it is a valid character A-H or 1-8. TODO fix error check. 
-
-						//!!!true temp holder
-						forcedpartial_array[i] = str_format;
-						i++;
-						continue;
+					forcedpartial_array[i] = str_format;
+					i++;	
 					}else {
-						System.out.println("invalid machine/task");
-						writer.write("invalid machine/task");
+						System.out.println("Error while parsing input file");
+						writer.write("Error while parsing input file");
 						writer.close();
 						System.exit(1);
-					}					
-
-					//fills in the rest of the array with "null" without iterating through the file read loop.
-				}else if ( "".equals(myLine.trim())){
-					for (i = i; i < 8; i++){
-						forcedpartial_array[i] = null;
 					}
-					forced_flag = false;
-					continue;
 				}
-
-			}
-
-			//FORBIDDEN MACHINE
-			if (myLine.contains("forbidden machine:")) {
-				forb_flag = true;
 				continue;
 			}
 
+//FORBIDDEN MACHINE
 			if (forb_flag) {
-				if(j < 56 && "".equals(myLine.trim()) != true) {
-					String str_format = myLine.toString().replace(",","").replace("(","").replace(")","").trim();		
-
-					if(validChar(str_format)) { //error check for A- H, 1 - 2
-						forbiddenmachine_array[j] = str_format;
-						j++;
-						continue;
-					}else {
-						System.out.println("invalid machine/task");
-						writer.write("invalid machine/task");
-						writer.close();
-						System.exit(1);
-					}	
-
-				}else if ( "".equals(myLine.trim())){
-					for (j = j; j < 8; j++){
-						forbiddenmachine_array[j] = null;
-					}
+				if (myLine.contains("too-near tasks:")) {
 					forb_flag = false;
+					near_flag = true;
 					continue;
 				}
-			}
-
-			//TOO NEAR TASK
-			if (myLine.contains("too-near tasks:")) {
-				near_flag = true;
-				continue;
-			}
-			
-			if (near_flag) {
-				if(k < 8 && "".equals(myLine.trim()) != true) {
-					String str_format = myLine.toString().replace(",","").replace("(","").replace(")","").trim();
-					if(validChar2(str_format)) {
-						neartask_array[k] = str_format;
-						k++;
-						continue;
-					}else {
+				
+				if(j < 56 && "".equals(myLine.trim()) != true) {
+					
+					if( myLine.trim().length() != 5 || validLineFPA_FM(myLine.trim()) != true ) {
 						System.out.println("invalid machine/task");
 						writer.write("invalid machine/task");
 						writer.close();
 						System.exit(1);
 					}
-
-				//k is the number of items in an array too near task array
-				}else if ( "".equals(myLine.trim())){
-					for (k = k; k < 8; k++){
-						neartask_array[k] = null;
+					String str_format = myLine.toString().replace(",","").replace("(","").replace(")","").trim();		
+					forbiddenmachine_array[j] = str_format;
+					j++;
 					}
+				continue;
+			}
+
+//TOO NEAR TASK
+			if (near_flag) {
+				if (myLine.contains("machine penalties:")) {
 					near_flag = false;
+					mach_flag = true;
+					continue;
+				}
+			
+				if(k < 8 && "".equals(myLine.trim()) != true) {
+					
+					if( myLine.trim().length() != 5 || validLineTNT(myLine.trim()) != true ) {
+						System.out.println("invalid machine/task");
+						writer.write("invalid machine/task");
+						writer.close();
+						System.exit(1);
+					}
+					String str_format = myLine.toString().replace(",","").replace("(","").replace(")","").trim();
+					neartask_array[k] = str_format;
+					k++;
+					continue;
+					
+				}else if ( "".equals(myLine.trim())){
 					continue;
 				}
 			}			
 
-			//Machine penalties
-		    String array1[] = myLine.split(" "); //splits the string of numbers with whitespace " "		    
-
-		    //Sets the machine penalties flag.
-			if (myLine.contains("machine penalties:")) {
-				mach_flag = true;
-				continue;
-			}
-
-			//Assignes machine penalties, breaking if finding more than 8 lines of machine penalties.
-			if (mach_flag && m_row <8) {
+//MACHINE PENALTIES
+		    String array1[] = myLine.split(" "); //splits the string of numbers with whitespace " "		   
+			//Assigns machine penalties, breaking if finding more than 8 lines of machine penalties.
+			if (mach_flag) {
+				if (myLine.contains("too-near penalities")) {
+					mach_flag = false;
+					toonear_flag = true;
+					continue;
+				}
+				
+				if(m_row < 8 && "".equals(myLine.trim()) != true) {		
 			    String hold = new String();
 			    if (array1.length != 8) { 						//Checks if the array length is less than 8. Breaks if so.
 			    	System.out.println("machine penalty error");
@@ -228,133 +238,179 @@ public class Parse {
 			    	writer.close();
 					System.exit(1);
 			    }
-
 			    for (int m_col = 0; m_col < array1.length; m_col++) {
 			    	hold = array1[m_col];			    	
 
-			    	//Checks if the integer is less than 0.
+			    	//Checks if the number is an natural integer.
 			    	if(isInteger(hold) != true) {
 				    	System.out.println("machine penalty error");
 				    	writer.write("machine penalty error");
 				    	writer.close();
 						System.exit(1);
 			    	}
-
 			    	mach_array[m_row][m_col] = Integer.parseInt(hold);
 			    }
-
 			    m_row++;
 
-			//checks if there is more than 8 lines for machine penaltiess
-			}else if(m_row == 8 && "".equals(myLine.trim())== true) {
-				mach_flag = false;
-				continue;
+			    //checks if there is more than 8 lines for machine penaltiess
+				}else if(m_row < 8 && "".equals(myLine.trim())== true) {
+					continue;
 
-			}else if (mach_flag && m_row == 8 && "".equals(myLine.trim())!= true) {
-				System.out.println("machine penalty error");
-				writer.write("machine penalty error");
-				writer.close();
-				System.exit(1);
+				}else if (mach_flag && m_row == 8 && "".equals(myLine.trim())!= true) {
+					System.out.println("machine penalty error");
+					writer.write("machine penalty error");
+					writer.close();
+					System.exit(1);
+				}
 			}
-
 			
-
-			
-
-			//Too near penalties
-			if (myLine.contains("too-near penalities")) {
-				toonear_flag = true;
-				continue;
-			}
+//TOO NEAR PENALTIES
 
 			if (toonear_flag) {
 				if(p < 8 && "".equals(myLine.trim()) != true) {
-					String str_format = myLine.toString().replace(",","").replace("(","").replace(")","").trim();
-					if(validChar(str_format)) {
-						toonearpenal_array[p] = str_format;
-						p++;
-						continue;
-
-					}else {
-						System.out.println("invalid machine/task");
-						writer.write("invalid machine/task");
+					
+					if(myLine.trim().length() != 7 || validLineTNP(myLine.trim()) != true ) {
+						System.out.println("invalid task");
+						writer.write("invalid task");
 						writer.close();
 						System.exit(1);
 					}
+					
+					String str_format = myLine.toString().replace(",","").replace("(","").replace(")","").trim();
+					
+					toonearpenal_array[p] = str_format;
+					p++;
+					continue;
 
-				//k is the number of items in an array too near task array
 				}else if ( "".equals(myLine.trim())){
-					for (p = p; p < 8; p++){
-						neartask_array[p] = null;
-					}
-
 					toonear_flag = false;
+					docuend = true;
 					continue;
 				}
-
 			}
-
+			
+			if (docuend == true) {
+				if ("".equals(myLine.trim())) {
+					continue;
+				}else {
+					System.out.println("Error while parsing input file");
+					writer.write("Error while parsing input file");
+					writer.close();
+					System.exit(1);
+				}
+			}
 		}
 
-			// System.out.println(Arrays.deepToString(forcedpartial_array));
-			// System.out.println(Arrays.deepToString(forbiddenmachine_array));			
-			// System.out.println(Arrays.deepToString(toonearpenal_array));						
-			// System.out.println(Arrays.deepToString(mach_array));
-			// System.out.println(Arrays.deepToString(neartask_array));
+			 System.out.println(Arrays.deepToString(forcedpartial_array));
+			 System.out.println(Arrays.deepToString(forbiddenmachine_array));			
+			 System.out.println(Arrays.deepToString(neartask_array));
+			 System.out.println(Arrays.deepToString(mach_array));
+			 System.out.println(Arrays.deepToString(toonearpenal_array));			
 			bufRead.close();
 			writer.close();
 	}
-
-	public boolean validChar(String ch) { // used for forced partial assignment, forbidden machine		
-
-		String first = ch.substring(0,1);
-		String second = ch.substring(1,2);
+	
+	public boolean validLineFPA_FM(String st) {
+		if("".equals(st.trim())){
+			return true;
+		}
+		
+		String first = st.substring(0,1);
+		String second = st.substring(1,2);
+		String third = st.substring(2,3);
+		String fourth = st.substring(3,4);
+		String fifth = st.substring(4,5);
+		
+		
+		String valid_syn[] = {"("};
 		String valid_num[] = {"1","2","3","4","5","6","7","8"};
+		String valid_com[] = {","};
 		String valid_char[] = {"A","B","C","D","E","F","G","H"};
-
-		if (ch.length()> 2 ) {
-			boolean contains0 = Arrays.stream(valid_char).anyMatch(first::equals);
-			boolean contains1 = Arrays.stream(valid_char).anyMatch(second::equals);			
-
-			String third = ch.substring(2);			
-
-			if (contains0 && contains1 && isInteger(third)) {
+		String valid_syn2[] = {")"};
+		
+		if (st.length() == 5 ) {
+			boolean contains1 = Arrays.stream(valid_syn).anyMatch(first::equals);
+			boolean contains2 = Arrays.stream(valid_num).anyMatch(second::equals);
+			boolean contains3 = Arrays.stream(valid_com).anyMatch(third::equals);
+			boolean contains4 = Arrays.stream(valid_char).anyMatch(fourth::equals);		
+			boolean contains5 = Arrays.stream(valid_syn2).anyMatch(fifth::equals);			
+			if (contains1 && contains2 && contains3 && contains4 && contains5) {
 				return true;
 			}else {
 				return false;
 			}
-		}
-
-		boolean contains0 = Arrays.stream(valid_num).anyMatch(first::equals);
-		boolean contains1 = Arrays.stream(valid_char).anyMatch(second::equals);		
-
-		if (contains0 && contains1) {
-			return true;
 		}else {
-		return false;
-		}		
-	}	
-
-	public boolean validChar2(String ch) { // for too-near tasks: block only		
-
-		String first = ch.substring(0,1);
-		String second = ch.substring(1,2);
-		String valid_char[] = {"A","B","C","D","E","F","G","H"};		
-
-		boolean contains0 = Arrays.stream(valid_char).anyMatch(first::equals);
-		boolean contains1 = Arrays.stream(valid_char).anyMatch(second::equals);
-
-		if (ch.length()> 2 ) {
-				return false;
-		}
-
-		if (contains0 && contains1) {
-			return true;
-		}else {
-				return false;
-		}
+			return false;}
 	}
-
+	
+	public boolean validLineTNT(String st) {
+		
+		if("".equals(st.trim())){
+			return true;
+		}
+		
+		String first = st.substring(0,1);
+		String second = st.substring(1,2);
+		String third = st.substring(2,3);
+		String fourth = st.substring(3,4);
+		String fifth = st.substring(4,5);
+		
+		String valid_syn[] = {"("};
+		String valid_com[] = {","};
+		String valid_char[] = {"A","B","C","D","E","F","G","H"};
+		String valid_syn2[] = {")"};
+		
+		if (st.length() == 5 ) {
+			boolean contains1 = Arrays.stream(valid_syn).anyMatch(first::equals);
+			boolean contains2 = Arrays.stream(valid_char).anyMatch(second::equals);
+			boolean contains3 = Arrays.stream(valid_com).anyMatch(third::equals);
+			boolean contains4 = Arrays.stream(valid_char).anyMatch(fourth::equals);		
+			boolean contains5 = Arrays.stream(valid_syn2).anyMatch(fifth::equals);			
+			if (contains1 && contains2 && contains3 && contains4 && contains5) {
+				return true;
+			}else {
+				return false;
+			}
+		}else {
+			return false;}
+	}
+	
+	public boolean validLineTNP(String st) {
+		
+		if("".equals(st.trim())){
+			return true;
+		}
+		
+		String first = st.substring(0,1);
+		String second = st.substring(1,2);
+		String third = st.substring(2,3);
+		String fourth = st.substring(3,4);
+		String fifth = st.substring(4,5);
+		String sixth = st.substring(5,6);
+		String seventh = st.substring(6,7);
+		
+		String valid_syn[] = {"("};
+		String valid_com[] = {","};
+		String valid_char[] = {"A","B","C","D","E","F","G","H"};
+		String valid_syn2[] = {")"};
+		
+		if (st.length() == 7 ) {
+			boolean contains1 = Arrays.stream(valid_syn).anyMatch(first::equals);
+			boolean contains2 = Arrays.stream(valid_char).anyMatch(second::equals);
+			boolean contains3 = Arrays.stream(valid_com).anyMatch(third::equals);
+			boolean contains4 = Arrays.stream(valid_char).anyMatch(fourth::equals);		
+			boolean contains5 = Arrays.stream(valid_com).anyMatch(fifth::equals);
+			boolean contains6 = isInteger(sixth);
+			boolean contains7 = Arrays.stream(valid_syn2).anyMatch(seventh::equals);
+			
+			if (contains1 && contains2 && contains3 && contains4 && contains5 && contains6 && contains7) {
+				return true;
+			}else {
+				return false;
+			}
+		}else {
+			return false;}
+	}
 
 	public boolean isInteger(String s) {return isInteger(s,10);}
 
@@ -371,8 +427,8 @@ public class Parse {
 	    	for(int i = 0; i < s.length(); i++) {
 	        	if(i == 0 && s.charAt(i) == '-') {
 	            	if(s.length() == 1) {
-	            		System.out.println("Invalid penalty");
-	            		writer2.write("Invalid penalty");
+	            		System.out.println("invalid penalty");
+	            		writer2.write("invalid penalty");
 	            		writer2.close();
 						System.exit(1);
 	            	}else 
@@ -380,8 +436,8 @@ public class Parse {
 	        	}
 
 	        	if(Character.digit(s.charAt(i),radix) < 0) {
-            		System.out.println("Invalid penalty");
-	        		writer2.write("Invalid penalty");
+            		System.out.println("invalid penalty");
+	        		writer2.write("invalid penalty");
 	        		writer2.close();
 					System.exit(1);
 	        	}
@@ -389,14 +445,23 @@ public class Parse {
 	    }catch (Exception e){System.exit(1);}
 	    return true;
 	}
+	
+	public static boolean containsWhiteSpace(final String st){
+	     for(int i = 0; i < st.length(); i++){
+	         if(Character.isWhitespace(st.charAt(i))){
+	             return true;
+	         }
+	     }
+	    return false;
+	}
 
 
 	// Example utilization of class 
 	public static void main(String[] args) {
 	
 		// Create Parse object with desired input file & output file locations
-		Parse parser = new Parse("C:\\Users\\parke\\Desktop\\Projects\\Repos\\cpsc449-Programming-Paradigms\\Test Files\\test.txt", 
-										"C:\\Users\\parke\\Desktop\\CPSC 449\\myoutput.txt");
+		Parse parser = new Parse("/Users/favian.silva/eclipse-workspace/A1/src/test.txt", 
+										"/Users/favian.silva/eclipse-workspace/A1/src/myoutput.txt");
 
 		// Parse through each line of the input file and quit upon proccessing errors. Must put Parse opbject in try catch block as
 		// methodn throws IOException.
