@@ -1,36 +1,42 @@
+import System.IO
+import System.Environment
+import System.Exit
+import Data.Char
+import Data.List
 
-forced = [(1, “A”), (2, “B”)]
-accepted = []
+b = [(1,"A"), (3,"C")]
+
+main = do
+    let a = permutations "ABCDEFGH"
+    let c = getFAccepted b a []
+    print c
 
 
+forced = [(1, "A"), (2, "B")]
 
-getAllCombs :: [char] -> [[char]]
 
 
 -- machine = “ABCDEFGH”
 
-stringCount :: [char] -> char -> [int]
-stringCount str ch = [ y | (x, y) <- zip str [0..], x == ch ]
+
+findIndex1 :: Char -> [Char] -> Integer -> Integer
+findIndex1 character [] index = -1
+findIndex1 character (x:xs) index 
+    | character == x = index
+    | otherwise = findIndex1 character xs index + 1
 
 
-stringIsAccepted :: List -> [char] -> bool
-stringIsAccepted [] machine -> true
-stringIsAccepted (x:xs) machine -> stringCount machine snd x == fst x && stringIsAccepted xs machine
+stringIsAccepted :: [(Integer,char)] -> [char] -> bool
+stringIsAccepted [] machine = True
+stringIsAccepted (x:xs) machine = (findIndex1 snd(x) machine 0 == fst x) && stringIsAccepted xs machine
 
 
 
 
-getFAccepted :: List -> [[char]] -> List -> List
-accepted = []
+getFAccepted :: [(Integer,char)] -> [char] -> [[char]] -> [[char]]
 
 getFAccepted [] (y:ys) accepted = (y:ys)
-getFAccepted (x:xs) [] accepted = []
-getFAccepted (x:xs) (y:ys) accepted = 
-	if stringIsAccepted (x:xs) y 
-		then accepted = accepted ++ y
-	else
-		getFAccepted (x:xs) ys accepted
-	getFAccepted (x:xs) ys accepted
-	then
-		accepted
-
+getFAccepted (x:xs) [] accepted = accepted
+getFAccepted (x:xs) (y:ys) accepted
+    | stringIsAccepted (x:xs) y = getFAccepted (x:xs) ys accepted + y
+    | otherwise = getFAccepted (x:xs) ys accepted
