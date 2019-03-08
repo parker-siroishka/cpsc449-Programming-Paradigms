@@ -18,10 +18,11 @@ main = do
     let allAccepted = getTooNearAccepted tooNear forcedAcc []
     --print tooNearAccepted
     --findBestMatch 
-    print allAccepted
-    let machinePenalties = getMachinePenalties machPens "ABCDEFGH" 0
-    let tooNearPenalties = getTooNearPenalties tooNearPens "ABCDEFGH" machinePenalties
-    print tooNearPenalties
+    let bestMatch = findBestMatch allAccepted tooNearPens machPens 2147483647 []
+    print bestMatch
+    -- let machinePenalties = getMachinePenalties machPens "ABCDEFGH" 0
+    -- let tooNearPenalties = getTooNearPenalties tooNearPens "ABCDEFGH" machinePenalties
+    -- print tooNearPenalties
 
 
 -- machine = “ABCDEFGH”
@@ -90,10 +91,11 @@ getTooNearPenalties (x:xs) machine pen
     | otherwise = getTooNearPenalties xs machine pen
 
 
-
-
-
-
+findBestMatch :: [[Char]] -> [(Char, Char, Int)] -> [[Int]] -> Int -> [Char] ->[Char]
+findBestMatch [] tooNearPenalties matrix tot best = best
+findBestMatch (x:xs) tooNearPenalties matrix tot best
+    | getTooNearPenalties tooNearPenalties x (getMachinePenalties matrix x 0) <= tot = findBestMatch xs tooNearPenalties matrix (getTooNearPenalties tooNearPenalties x (getMachinePenalties matrix x 0)) x
+    | otherwise = findBestMatch xs tooNearPenalties matrix tot best
 
 
 
