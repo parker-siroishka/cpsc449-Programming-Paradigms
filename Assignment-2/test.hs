@@ -3,40 +3,100 @@ import System.Environment
 import System.Exit
 import Data.Char
 import Data.List
+import Data.Tuple
 
-b = [(1,"A"), (3,"C")]
+
+forced = [(1,'A'), (2,'B')]
+tooNear = [('H', 'C')]
+machPens = [[10,1,1,1,1,1,1,1],[1,10,1,1,1,1,1,1],[1,1,10,1,1,1,1,1],[1,1,1,10,1,1,1,1],[1,1,1,1,10,1,1,1],[1,1,1,1,1,10,1,1],[1,1,1,1,1,1,10,1],[1,1,1,1,1,1,1,10]]
+tooNearPens = [('A', 'B', 69), ('D', 'E', 12), ('F', 'H', 100)]
+
 
 main = do
-    let a = permutations "ABCDEFGH"
-    let c = getFAccepted b a []
-    print c
-
-
-forced = [(1, "A"), (2, "B")]
-
+    let all = permutations "ABCDEFGH"
+    let forcedAcc = getFAccepted forced all []
+    let allAccepted = getTooNearAccepted tooNear forcedAcc []
+    --print tooNearAccepted
+    --findBestMatch 
+    print allAccepted
+    let machinePenalties = getMachinePenalties machPens "ABCDEFGH" 0
+    let tooNearPenalties = getTooNearPenalties tooNearPens "ABCDEFGH" machinePenalties
+    print tooNearPenalties
 
 
 -- machine = “ABCDEFGH”
 
 
-findIndex1 :: Char -> [Char] -> Integer -> Integer
-findIndex1 character [] index = -1
-findIndex1 character (x:xs) index 
-    | character == x = index
-    | otherwise = findIndex1 character xs index + 1
+-- findIndex1 :: [(Integer, Char)] -> [Char] -> Integer -> Integer
+-- findIndex1 tuple [] index = -1
+-- findIndex1 tuple (x:xs) index 
+--     | get2nd(tuple) == x = index
+--     | otherwise = findIndex1 tuple xs (index + 1)
 
 
-stringIsAccepted :: [(Integer,char)] -> [char] -> bool
+stringIsAccepted :: [(Int, Char)] -> [Char] -> Bool
 stringIsAccepted [] machine = True
-stringIsAccepted (x:xs) machine = (findIndex1 snd(x) machine 0 == fst x) && stringIsAccepted xs machine
+stringIsAccepted (x:xs) machine = (((elemIndices(snd(x)) machine) == [fst(x)]) && stringIsAccepted xs machine)
 
 
 
+-- Takes in the forced penalties, the set of all possible strings, the set of all allowed strings so far, and returns a set of all allowed strings
+getFAccepted :: [(Int, Char)] -> [[Char]] -> [[Char]] -> [[Char]]
 
-getFAccepted :: [(Integer,char)] -> [char] -> [[char]] -> [[char]]
-
-getFAccepted [] (y:ys) accepted = (y:ys)
 getFAccepted (x:xs) [] accepted = accepted
 getFAccepted (x:xs) (y:ys) accepted
-    | stringIsAccepted (x:xs) y = getFAccepted (x:xs) ys accepted + y
+    | stringIsAccepted (x:xs) y = getFAccepted (x:xs) ys accepted ++ [y]
     | otherwise = getFAccepted (x:xs) ys accepted
+
+
+-- Takes in too near tasks and machine string, returns bool.
+stringTooNear :: [(Char, Char)] -> [Char] -> Bool
+stringTooNear [] machine = True
+--Checks if indices are 7 and 0, checks if indices are x and x-1, checks rest of too near
+stringTooNear (x:xs) machine = (stringTooNear xs machine) && not (elemIndices(fst(x)) machine == [7] && elemIndices(snd(x)) machine == [0]) && not (elemIndices(fst(x)) machine!!0 == (elemIndices(snd(x)) machine!!0)-1)
+
+
+-- Takes in the too near tasks, the set of all possible forced strings, the set of all allowed too near tasks and returns the set of all allowed strings recursively
+getTooNearAccepted :: [(Char, Char)] -> [[Char]] -> [[Char]] -> [[Char]]
+
+getTooNearAccepted (x:xs) [] accepted = accepted
+getTooNearAccepted (x:xs) (y:ys) accepted
+    | stringTooNear (x:xs) y = getTooNearAccepted (x:xs) ys accepted ++ [y]
+    | otherwise = getTooNearAccepted (x:xs) ys accepted
+
+
+--takes in a 2D array of integers, the machine string, and the total penalty so far and returns the total machine penalty
+getMachinePenalties :: [[Int]] -> [Char] -> Int -> Int
+stringRef = "ABCDEFGH"
+getMachinePenalties matrix [] pen = 0
+getMachinePenalties matrix (y:ys) pen = (getMachinePenalties matrix ys pen) + (matrix!!(8 - length (y:ys)))!!((elemIndices y stringRef)!!0)
+
+
+extractFirst :: (a, b, c) -> a
+extractFirst (a,_,_) = a
+
+extractSecond :: (a, b, c) -> b
+extractSecond (_,b,_) = b
+
+extractThird :: (a, b, c) -> c
+extractThird (_,_,c) = c
+
+
+getTooNearPenalties :: [(Char, Char, Int)] -> [Char] -> Int -> Int
+getTooNearPenalties [] machine pen = pen
+getTooNearPenalties (x:xs) machine pen
+    | (elemIndices(extractFirst(x)) machine == [7] && elemIndices(extractSecond(x)) machine == [0]) = (getTooNearPenalties xs machine pen) + extractThird(x)
+    | (elemIndices(extractFirst(x)) machine!!0 == (elemIndices(extractSecond(x)) machine!!0)-1) = (getTooNearPenalties xs machine pen) + extractThird(x)
+    | otherwise = getTooNearPenalties xs machine pen
+
+
+
+
+
+
+
+
+
+
+
+
