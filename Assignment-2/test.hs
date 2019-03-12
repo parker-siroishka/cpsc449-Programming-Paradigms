@@ -7,6 +7,7 @@ import Data.Tuple
 
 
 forced = [(0,'A')]
+forbidden = [(1, 'B')]
 tooNear = [('H', 'C')]
 machPens = [[1,10,10,10,10,10,10,10],[10,1,10,10,10,10,10,10],[10,10,1,10,10,10,10,10],[10,10,10,1,10,10,10,10],[10,10,10,10,1,10,10,10],[10,10,10,10,10,1,10,10],[10,10,10,10,10,10,1,10],[10,10,10,10,10,10,10,1]]
 tooNearPens = [('F', 'H', 100)]
@@ -14,7 +15,7 @@ tooNearPens = [('F', 'H', 100)]
 
 main = do
     let all = permutations "ABCDEFGH"
-    let forcedAcc = getFAccepted forced all []
+    let forcedAcc = getFAccepted forced forbidden all []
     let allAccepted = getTooNearAccepted tooNear forcedAcc []
     --print tooNearAccepted
     --findBestMatch 
@@ -45,11 +46,11 @@ stringIsNotForbidden (x:xs) machine = (((elemIndices(snd(x)) machine) /= [fst(x)
 
 
 -- Takes in the forced penalties, the set of all possible strings, the set of all allowed strings so far, and returns a set of all allowed strings
-getFAccepted :: [(Int, Char)] -> [[Char]] -> [[Char]] -> [[Char]]
+getFAccepted :: [(Int, Char)] -> [(Int, Char)] -> [[Char]] -> [[Char]] -> [[Char]]
 
-getFAccepted (x:xs) [] accepted = accepted
-getFAccepted (x:xs) (y:ys) accepted
-    | stringIsAccepted (x:xs) y && stringIsNotForbidden (x:xs) y = getFAccepted (x:xs) ys accepted ++ [y]
+getFAccepted (x:xs) (w:ws) [] accepted = accepted
+getFAccepted (x:xs) (w:ws) (y:ys) accepted
+    | stringIsAccepted (x:xs) y && stringIsNotForbidden (w:ws) y = getFAccepted (x:xs) ys accepted ++ [y]
     | otherwise = getFAccepted (x:xs) ys accepted
 
 
