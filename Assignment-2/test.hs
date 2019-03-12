@@ -6,10 +6,10 @@ import Data.List
 import Data.Tuple
 
 
-forced = [(1,'A'), (2,'B')]
+forced = [(0,'A')]
 tooNear = [('H', 'C')]
-machPens = [[10,1,1,1,1,1,1,1],[1,10,1,1,1,1,1,1],[1,1,10,1,1,1,1,1],[1,1,1,10,1,1,1,1],[1,1,1,1,10,1,1,1],[1,1,1,1,1,10,1,1],[1,1,1,1,1,1,10,1],[1,1,1,1,1,1,1,10]]
-tooNearPens = [('A', 'B', 69), ('D', 'E', 12), ('F', 'H', 100)]
+machPens = [[1,10,10,10,10,10,10,10],[10,1,10,10,10,10,10,10],[10,10,1,10,10,10,10,10],[10,10,10,1,10,10,10,10],[10,10,10,10,1,10,10,10],[10,10,10,10,10,1,10,10],[10,10,10,10,10,10,1,10],[10,10,10,10,10,10,10,1]]
+tooNearPens = [('F', 'H', 100)]
 
 
 main = do
@@ -37,8 +37,11 @@ main = do
 
 stringIsAccepted :: [(Int, Char)] -> [Char] -> Bool
 stringIsAccepted [] machine = True
-stringIsAccepted (x:xs) machine = (((elemIndices(snd(x)) machine) == [fst(x)]) && stringIsAccepted xs machine)
+stringIsAccepted (x:xs) machine = (((elemIndices(snd(x)) machine) == [fst(x) -1]) && stringIsAccepted xs machine)
 
+stringIsNotForbidden  :: [(Int, Char)] -> [Char]-> Bool
+stringIsNotForbidden [] machine = True
+stringIsNotForbidden (x:xs) machine = (((elemIndices(snd(x)) machine) /= [fst(x) -1]) && stringIsNotForbidden xs machine)
 
 
 -- Takes in the forced penalties, the set of all possible strings, the set of all allowed strings so far, and returns a set of all allowed strings
@@ -46,7 +49,7 @@ getFAccepted :: [(Int, Char)] -> [[Char]] -> [[Char]] -> [[Char]]
 
 getFAccepted (x:xs) [] accepted = accepted
 getFAccepted (x:xs) (y:ys) accepted
-    | stringIsAccepted (x:xs) y = getFAccepted (x:xs) ys accepted ++ [y]
+    | stringIsAccepted (x:xs) y && stringIsNotForbidden (x:xs) y = getFAccepted (x:xs) ys accepted ++ [y]
     | otherwise = getFAccepted (x:xs) ys accepted
 
 
