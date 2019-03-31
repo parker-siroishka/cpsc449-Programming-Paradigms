@@ -7,13 +7,13 @@ import Data.Typeable
 import Data.Maybe
 
 main = do
-    let validPenal = ["1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1"]
-    let invalidPenal = ["1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 a1 1"]
+    let validPenal = ["1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1", "", ""]
+    let invalidPenal = ["1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 1 1","1 1 1 1 1 1 a1 1", ""]
 
     let intList = convertPenalToInt validPenal
     -- This will print 8 on 'validPenal'
     -- and will print 7 on 'invalidPenal' as one row in 'invalidPenal' contains a garbage value
-    putStrLn $ show (length intList)
+    putStrLn $ show (intList)
 
 
 -- Returns a list of lists of type Int. 
